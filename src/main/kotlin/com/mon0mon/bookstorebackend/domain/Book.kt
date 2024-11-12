@@ -1,6 +1,6 @@
 package com.mon0mon.bookstorebackend.domain
 
-class Book(
+data class Book(
     val isbn: String,
     var title: String,
     var description: String,
