@@ -1,7 +1,11 @@
-select *
-from pg_catalog.pg_tables
-where schemaname like 'public';
+SELECT *
+FROM PG_CATALOG.PG_TABLES
+WHERE SCHEMANAME LIKE 'public';
 
-select *
-from information_schema.columns
-where table_name in ('authors', 'books')
+SELECT *
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME IN ('authors', 'books');
+
+SELECT *
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME IN ('flyway_schema_history');
