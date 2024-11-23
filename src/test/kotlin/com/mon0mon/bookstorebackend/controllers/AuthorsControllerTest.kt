@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.mon0mon.bookstorebackend.domain.dto.AuthorDto
 import com.mon0mon.bookstorebackend.domain.entities.AuthorEntity
 import com.mon0mon.bookstorebackend.services.AuthorService
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import org.mockito.ArgumentMatchers.eq
-import org.mockito.Mockito.verify
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -21,13 +23,24 @@ import org.springframework.test.web.servlet.post
 @AutoConfigureMockMvc
 class AuthorsControllerTest @Autowired constructor(
     private val mockMvc: MockMvc,
-    @MockBean
+    @MockkBean
     private val authorService: AuthorService,
 ) {
     val objectMapper = ObjectMapper()
 
+    @BeforeEach
+    fun extracted() {
+        every {
+            authorService.save(any())
+        } answers {
+            firstArg()
+        }
+    }
+
     @Test
     fun `test that create Author saves the Author`() {
+        extracted()
+
         mockMvc.post("/v1/authors") {
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
@@ -50,7 +63,7 @@ class AuthorsControllerTest @Autowired constructor(
             description = "some-description.jpeg"
         )
 
-        verify(authorService).save(eq(expected))
+        verify { authorService.save(expected) }
     }
 
     @Test

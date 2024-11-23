@@ -38,10 +38,15 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude("org.mockito", "mockito-core")
+        exclude("org.mockito", "mockito-junit-jupiter")
+    }
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     runtimeOnly("org.postgresql:postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // https://mvnrepository.com/artifact/com.ninja-squad/springmockk
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
 }
 
 kotlin {
