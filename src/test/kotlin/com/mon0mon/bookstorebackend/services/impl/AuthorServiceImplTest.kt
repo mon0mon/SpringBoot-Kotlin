@@ -1,10 +1,8 @@
 package com.mon0mon.bookstorebackend.services.impl
 
-import com.mon0mon.bookstorebackend.domain.entities.AuthorEntity
 import com.mon0mon.bookstorebackend.repositories.AuthorRepository
 import com.mon0mon.bookstorebackend.testAuthorEntityA
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -40,5 +38,18 @@ class AuthorServiceImplTest @Autowired constructor(
         val expected = listOf(savedAuthor)
         val result = underTest.list()
         assertThat(result).isEqualTo(expected)
+    }
+
+    @Test
+    fun `test that get returns null when author not present in the database`() {
+        val result = underTest.get(999)
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `test that get returns author when author is present in the database`() {
+        val savedAuthor = authorRepository.save(testAuthorEntityA())
+        val result = underTest.get(savedAuthor.id!!)
+        assertThat(result).isEqualTo(savedAuthor)
     }
 }
