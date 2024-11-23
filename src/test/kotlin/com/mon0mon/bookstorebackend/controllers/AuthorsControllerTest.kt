@@ -34,7 +34,7 @@ class AuthorsControllerTest @Autowired constructor(
     @BeforeEach
     fun extracted() {
         every {
-            authorService.save(any())
+            authorService.create(any())
         } answers {
             firstArg()
         }
@@ -58,7 +58,7 @@ class AuthorsControllerTest @Autowired constructor(
             image = "author-image.jpeg",
         )
 
-        verify { authorService.save(expected) }
+        verify { authorService.create(expected) }
     }
 
     @Test
