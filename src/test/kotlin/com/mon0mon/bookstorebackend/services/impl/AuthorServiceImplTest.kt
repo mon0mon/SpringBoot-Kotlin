@@ -1,9 +1,12 @@
 package com.mon0mon.bookstorebackend.services.impl
 
+import com.mon0mon.bookstorebackend.domain.entities.AuthorEntity
 import com.mon0mon.bookstorebackend.repositories.AuthorRepository
 import com.mon0mon.bookstorebackend.testAuthorEntityA
+import com.mon0mon.bookstorebackend.testAuthorEntityB
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -24,6 +27,14 @@ class AuthorServiceImplTest @Autowired constructor(
         assertThat(recalledAuthor!!).isEqualTo(
             testAuthorEntityA(id = savedAuthor.id)
         )
+    }
+
+    @Test
+    fun `test that an Author with an Id throws an IllegalArgumentException`() {
+        assertThrows<IllegalArgumentException> {
+            val existingAuthor = testAuthorEntityA(id = 999)
+            underTest.create(existingAuthor)
+        }
     }
 
     @Test
@@ -51,5 +62,27 @@ class AuthorServiceImplTest @Autowired constructor(
         val savedAuthor = authorRepository.save(testAuthorEntityA())
         val result = underTest.get(savedAuthor.id!!)
         assertThat(result).isEqualTo(savedAuthor)
+    }
+
+    @Test
+    fun `test that full update successfully updates the author in the database`() {
+        val existingAuthor = authorRepository.save(testAuthorEntityA())
+        val existingAuthorId = existingAuthor.id!!
+        val updatedAuthor = testAuthorEntityB(existingAuthorId)
+        val result = underTest.fullUpdate(existingAuthorId, updatedAuthor)
+        assertThat(result).isEqualTo(updatedAuthor)
+
+        val retrievedAuthor = authorRepository.findByIdOrNull(existingAuthorId)
+        assertThat(retrievedAuthor).isNotNull()
+        assertThat(retrievedAuthor).isEqualTo(updatedAuthor)
+    }
+
+    @Test
+    fun `test that full update Author throws IllegalStateException when Author does not exist in the database`() {
+        assertThrows<IllegalStateException> {
+            val nonExistingAuthorId = 999L
+            val updatedAuthor = testAuthorEntityB(nonExistingAuthorId)
+            underTest.fullUpdate(nonExistingAuthorId, updatedAuthor)
+        }
     }
 }
