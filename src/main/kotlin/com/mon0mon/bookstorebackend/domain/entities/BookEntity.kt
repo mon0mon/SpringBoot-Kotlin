@@ -1,10 +1,10 @@
-package com.mon0mon.bookstorebackend.domain
+package com.mon0mon.bookstorebackend.domain.entities
 
 import jakarta.persistence.*
 
 @Entity
 @Table(name = "books")
-data class Book(
+data class BookEntity(
     @Id
     @Column(name = "isbn")
     val isbn: String,
@@ -16,5 +16,5 @@ data class Book(
     var image: String,
     @ManyToOne(cascade = [CascadeType.DETACH])
     @JoinColumn(name = "author_id")
-    var author: Author,
+    var authorEntity: AuthorEntity,
 )
