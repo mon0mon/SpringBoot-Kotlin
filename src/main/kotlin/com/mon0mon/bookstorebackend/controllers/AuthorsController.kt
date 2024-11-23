@@ -1,13 +1,17 @@
 package com.mon0mon.bookstorebackend.controllers
 
+import com.mon0mon.bookstorebackend.domain.AuthorUpdateRequest
 import com.mon0mon.bookstorebackend.domain.dto.AuthorDto
+import com.mon0mon.bookstorebackend.domain.dto.AuthorUpdateRequestDto
 import com.mon0mon.bookstorebackend.domain.entities.AuthorEntity
 import com.mon0mon.bookstorebackend.services.AuthorService
 import com.mon0mon.bookstorebackend.toAuthorDto
 import com.mon0mon.bookstorebackend.toAuthorEntity
+import com.mon0mon.bookstorebackend.toAuthorUpdateRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -51,6 +55,19 @@ class AuthorsController(
     ): ResponseEntity<AuthorDto> {
         return try {
             val updatedAuthor = authorService.fullUpdate(id, authorDto.toAuthorEntity())
+            ResponseEntity(updatedAuthor.toAuthorDto(), HttpStatus.OK)
+        } catch (ex: IllegalStateException) {
+            ResponseEntity(HttpStatus.BAD_REQUEST)
+        }
+    }
+
+    @PatchMapping(path = ["/{id}"])
+    fun partialUpdateAuthor(
+        @PathVariable("id") id: Long,
+        @RequestBody authorUpdateRequest: AuthorUpdateRequestDto,
+    ): ResponseEntity<AuthorDto> {
+        return try {
+            val updatedAuthor = authorService.partialUpdate(id, authorUpdateRequest.toAuthorUpdateRequest())
             ResponseEntity(updatedAuthor.toAuthorDto(), HttpStatus.OK)
         } catch (ex: IllegalStateException) {
             ResponseEntity(HttpStatus.BAD_REQUEST)
