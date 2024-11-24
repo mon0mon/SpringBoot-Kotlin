@@ -237,4 +237,18 @@ class AuthorsControllerTest @Autowired constructor(
             content { jsonPath("$.image", equalTo("author-image.jpeg")) }
         }
     }
+
+    @Test
+    fun `test that delete Author returns HTTP 204 on successful delete`() {
+        every {
+            authorService.delete(any())
+        } answers {}
+
+        mockMvc.delete("$AUTHORS_BASE_URL/999") {
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isNoContent() }
+        }
+    }
 }

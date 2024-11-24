@@ -180,4 +180,27 @@ class AuthorServiceImplTest @Autowired constructor(
         assertThat(retrievedAuthor).isNotNull()
         assertThat(retrievedAuthor).isEqualTo(expected)
     }
+
+    @Test
+    fun `test that delete deletes an existing Author in the database`() {
+        val existingAuthor = authorRepository.save(testAuthorEntityA())
+        val existingAuthorId = existingAuthor.id!!
+
+        underTest.delete(existingAuthorId)
+
+        assertThat(
+            authorRepository.existsById(existingAuthorId)
+        ).isFalse()
+    }
+
+    @Test
+    fun `test that delete deletes an non-existing Author in the database`() {
+        val nonExistingId = 999L
+
+        underTest.delete(nonExistingId)
+
+        assertThat(
+            authorRepository.existsById(nonExistingId)
+        ).isFalse()
+    }
 }
