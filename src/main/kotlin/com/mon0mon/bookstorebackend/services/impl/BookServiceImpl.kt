@@ -1,6 +1,7 @@
 package com.mon0mon.bookstorebackend.services.impl
 
 import com.mon0mon.bookstorebackend.domain.BookSummary
+import com.mon0mon.bookstorebackend.domain.BookUpdateRequest
 import com.mon0mon.bookstorebackend.domain.entities.BookEntity
 import com.mon0mon.bookstorebackend.repositories.AuthorRepository
 import com.mon0mon.bookstorebackend.repositories.BookRepository
@@ -35,5 +36,18 @@ class BookServiceImpl(
 
     override fun get(isbn: String): BookEntity? {
         return bookRepository.findByIdOrNull(isbn)
+    }
+
+    override fun partialUpdate(isbn: String, bookUpdateRequestDto: BookUpdateRequest): BookEntity {
+        val existingBook = bookRepository.findByIdOrNull(isbn)
+        checkNotNull(existingBook)
+
+        val updatedBook = existingBook.copy(
+            title = bookUpdateRequestDto.title ?: existingBook.title,
+            description = bookUpdateRequestDto.description ?: existingBook.description,
+            image = bookUpdateRequestDto.image ?: existingBook.image,
+        )
+
+        return bookRepository.save(updatedBook)
     }
 }

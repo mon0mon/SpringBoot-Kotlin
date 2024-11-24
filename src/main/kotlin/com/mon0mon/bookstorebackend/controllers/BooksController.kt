@@ -1,14 +1,17 @@
 package com.mon0mon.bookstorebackend.controllers
 
 import com.mon0mon.bookstorebackend.domain.dto.BookSummaryDto
+import com.mon0mon.bookstorebackend.domain.dto.BookUpdateRequestDto
 import com.mon0mon.bookstorebackend.domain.entities.BookEntity
 import com.mon0mon.bookstorebackend.exception.InvalidAuthorException
 import com.mon0mon.bookstorebackend.services.BookService
 import com.mon0mon.bookstorebackend.toBookSummary
 import com.mon0mon.bookstorebackend.toBookSummaryDto
+import com.mon0mon.bookstorebackend.toBookUpdateRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -52,5 +55,18 @@ class BooksController(
     ): ResponseEntity<BookSummaryDto> {
         return bookService.get(isbn)?.let { ResponseEntity(it.toBookSummaryDto(), HttpStatus.OK) }
             ?: ResponseEntity(HttpStatus.NOT_FOUND)
+    }
+
+    @PatchMapping(path = ["/{isbn}"])
+    fun partialUpdateBook(
+        @PathVariable("isbn") isbn: String,
+        @RequestBody bookUpdateRequestDto: BookUpdateRequestDto
+    ): ResponseEntity<BookSummaryDto> {
+        try {
+            val updatedBook = bookService.partialUpdate(isbn, bookUpdateRequestDto.toBookUpdateRequest())
+            return ResponseEntity(updatedBook.toBookSummaryDto(), HttpStatus.OK)
+        } catch (e: IllegalStateException) {
+            return ResponseEntity(HttpStatus.BAD_REQUEST)
+        }
     }
 }

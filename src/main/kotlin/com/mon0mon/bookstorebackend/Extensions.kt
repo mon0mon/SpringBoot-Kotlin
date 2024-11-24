@@ -3,10 +3,8 @@ package com.mon0mon.bookstorebackend
 import com.mon0mon.bookstorebackend.domain.AuthorSummary
 import com.mon0mon.bookstorebackend.domain.AuthorUpdateRequest
 import com.mon0mon.bookstorebackend.domain.BookSummary
-import com.mon0mon.bookstorebackend.domain.dto.AuthorDto
-import com.mon0mon.bookstorebackend.domain.dto.AuthorSummaryDto
-import com.mon0mon.bookstorebackend.domain.dto.AuthorUpdateRequestDto
-import com.mon0mon.bookstorebackend.domain.dto.BookSummaryDto
+import com.mon0mon.bookstorebackend.domain.BookUpdateRequest
+import com.mon0mon.bookstorebackend.domain.dto.*
 import com.mon0mon.bookstorebackend.domain.entities.AuthorEntity
 import com.mon0mon.bookstorebackend.domain.entities.BookEntity
 import com.mon0mon.bookstorebackend.exception.InvalidAuthorException
@@ -74,4 +72,10 @@ fun BookEntity.toBookSummaryDto() = BookSummaryDto(
     description = this.description,
     image = this.image,
     author = this.authorEntity.toAuthorSummaryDto()
+)
+
+fun BookUpdateRequestDto.toBookUpdateRequest() = BookUpdateRequest(
+    title = title,
+    description = description,
+    image = image
 )
