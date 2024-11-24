@@ -2,9 +2,12 @@ package com.mon0mon.bookstorebackend.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mon0mon.bookstorebackend.*
+import com.mon0mon.bookstorebackend.repositories.AuthorRepository
+import com.mon0mon.bookstorebackend.repositories.BookRepository
 import com.mon0mon.bookstorebackend.services.impl.BookServiceImpl
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.CoreMatchers.equalTo
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,8 +23,13 @@ import org.springframework.test.web.servlet.result.StatusResultMatchersDsl
 @AutoConfigureMockMvc
 class BooksControllerTest @Autowired constructor(
     private val mockMvc: MockMvc,
-    @MockkBean val bookService: BookServiceImpl,
+    @MockkBean val underTest: BookServiceImpl,
 ) {
+    @Autowired
+    private lateinit var bookRepository: BookRepository
+
+    @Autowired
+    private lateinit var authorRepository: AuthorRepository
     val objectMapper = ObjectMapper()
 
     @Test
@@ -44,7 +52,7 @@ class BooksControllerTest @Autowired constructor(
         val bookSummaryDto = testBookSummaryDtoA(isbn, authorSummaryDto)
 
         every {
-            bookService.createUpdate(isbn, any())
+            underTest.createUpdate(isbn, any())
         } answers {
             Pair(savedBook, true)
         }
@@ -66,7 +74,7 @@ class BooksControllerTest @Autowired constructor(
         val bookSummaryDto = testBookSummaryDtoA(isbn, authorSummaryDto)
 
         every {
-            bookService.createUpdate(isbn, any())
+            underTest.createUpdate(isbn, any())
         } throws (IllegalStateException())
 
         mockMvc.put("/v1/books/$isbn") {
@@ -90,7 +98,7 @@ class BooksControllerTest @Autowired constructor(
         val bookSummaryDto = testBookSummaryDtoA(isbn, authorSummaryDto)
 
         every {
-            bookService.createUpdate(isbn, any())
+            underTest.createUpdate(isbn, any())
         } answers {
             Pair(savedBook, isCreated)
         }
@@ -109,7 +117,7 @@ class BooksControllerTest @Autowired constructor(
         val isbn = BOOK_A_ISBN
 
         every {
-            bookService.list()
+            underTest.list()
         } answers {
             listOf(
                 testBookEntityA(
@@ -120,6 +128,52 @@ class BooksControllerTest @Autowired constructor(
         }
 
         mockMvc.get("/v1/books") {
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isOk() }
+            content { jsonPath("$[0].isbn", equalTo(isbn)) }
+            content { jsonPath("$[0].title", equalTo("Test Book A")) }
+            content { jsonPath("$[0].image", equalTo("book-image.jpeg")) }
+            content { jsonPath("$[0].author.id", equalTo(1)) }
+            content { jsonPath("$[0].author.name", equalTo("John Doe")) }
+            content { jsonPath("$[0].author.image", equalTo("author-image.jpeg")) }
+        }
+    }
+
+    @Test
+    fun `test that list returns no books when they do not match the author ID`() {
+        every {
+            underTest.list(authorId = any())
+        } answers {
+            emptyList()
+        }
+
+        mockMvc.get("/v1/books?authors=99") {
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isOk() }
+            content { json("[]") }
+        }
+    }
+
+    @Test
+    fun `test that list returns book matches author ID`() {
+        val isbn = BOOK_A_ISBN
+
+        every {
+            underTest.list(authorId = 1L)
+        } answers {
+            listOf(
+                testBookEntityA(
+                    isbn = isbn,
+                    author = testAuthorEntityA(1L)
+                )
+            )
+        }
+
+        mockMvc.get("/v1/books?author=1") {
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
         }.andExpect {
