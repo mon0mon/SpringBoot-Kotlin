@@ -1,10 +1,13 @@
 package com.mon0mon.bookstorebackend.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.mon0mon.bookstorebackend.domain.AuthorUpdateRequest
+import com.mon0mon.bookstorebackend.domain.dto.AuthorUpdateRequestDto
 import com.mon0mon.bookstorebackend.domain.entities.AuthorEntity
 import com.mon0mon.bookstorebackend.services.AuthorService
 import com.mon0mon.bookstorebackend.testAuthorDtoA
 import com.mon0mon.bookstorebackend.testAuthorEntityA
+import com.mon0mon.bookstorebackend.testAuthorUpdateRequestDtoA
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.verify
@@ -16,10 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.post
-import org.springframework.test.web.servlet.put
+import org.springframework.test.web.servlet.*
 import java.lang.IllegalStateException
 
 private const val AUTHORS_BASE_URL = "/v1/authors"
@@ -198,6 +198,43 @@ class AuthorsControllerTest @Autowired constructor(
             content = objectMapper.writeValueAsString(testAuthorDtoA(id = 999))
         }.andExpect {
             status { isBadRequest() }
+        }
+    }
+
+    @Test
+    fun `test that partial update Author returns HTTP 400 on IllegalStateException`() {
+        every {
+            authorService.partialUpdate(any(), any())
+        } throws (IllegalStateException())
+
+        mockMvc.patch("$AUTHORS_BASE_URL/999") {
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(testAuthorUpdateRequestDtoA(999L))
+        }.andExpect {
+            status { isBadRequest() }
+        }
+    }
+
+    @Test
+    fun `test that partial update return HTTP 200 and updated Author`() {
+        every {
+            authorService.partialUpdate(any(), any())
+        } answers {
+            testAuthorEntityA(id = 999L)
+        }
+
+        mockMvc.patch("$AUTHORS_BASE_URL/999") {
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(testAuthorUpdateRequestDtoA(999L))
+        }.andExpect {
+            status { isOk() }
+            content { jsonPath("$.id", equalTo(999)) }
+            content { jsonPath("$.name", equalTo("John Doe")) }
+            content { jsonPath("$.age", equalTo(30)) }
+            content { jsonPath("$.description", equalTo("Some description")) }
+            content { jsonPath("$.image", equalTo("author-image.jpeg")) }
         }
     }
 }

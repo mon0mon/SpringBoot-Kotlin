@@ -1,9 +1,11 @@
 package com.mon0mon.bookstorebackend.services.impl
 
+import com.mon0mon.bookstorebackend.domain.AuthorUpdateRequest
 import com.mon0mon.bookstorebackend.domain.entities.AuthorEntity
 import com.mon0mon.bookstorebackend.repositories.AuthorRepository
 import com.mon0mon.bookstorebackend.testAuthorEntityA
 import com.mon0mon.bookstorebackend.testAuthorEntityB
+import com.mon0mon.bookstorebackend.testAuthorUpdateRequestA
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -84,5 +86,98 @@ class AuthorServiceImplTest @Autowired constructor(
             val updatedAuthor = testAuthorEntityB(nonExistingAuthorId)
             underTest.fullUpdate(nonExistingAuthorId, updatedAuthor)
         }
+    }
+
+    @Test
+    fun `test that partial update Author throws IllegalStateException when Author does not exist in the database`() {
+        assertThrows<IllegalStateException> {
+            val nonExistingAuthorId = 999L
+            val updateRequest = testAuthorUpdateRequestA(nonExistingAuthorId)
+            underTest.partialUpdate(nonExistingAuthorId, updateRequest)
+        }
+    }
+
+    @Test
+    fun `test that partial update Author does not update Author when all values are null`() {
+        val existingAuthor = authorRepository.save(testAuthorEntityA())
+        val updatedAuthor = underTest.partialUpdate(existingAuthor.id!!, AuthorUpdateRequest())
+        assertThat(updatedAuthor).isEqualTo(existingAuthor)
+    }
+
+    @Test
+    fun `test that partial update Author updates author name`() {
+        val newName = "New Name"
+        val existingAuthor = testAuthorEntityA()
+        val expectedAuthor = existingAuthor.copy(name = newName)
+        val authorUpdateRequest = AuthorUpdateRequest(name = newName)
+
+        assertThatAuthorPartialUpdateIsUpdated(
+            existingAuthor = existingAuthor,
+            expectedAuthor = expectedAuthor,
+            authorUpdateRequest = authorUpdateRequest,
+        )
+    }
+
+    @Test
+    fun `test that partial update Author updates author age`() {
+        val newAge = 50
+        val existingAuthor = testAuthorEntityA()
+        val expectedAuthor = existingAuthor.copy(age = newAge)
+        val authorUpdateRequest = AuthorUpdateRequest(age = newAge)
+
+        assertThatAuthorPartialUpdateIsUpdated(
+            existingAuthor = existingAuthor,
+            expectedAuthor = expectedAuthor,
+            authorUpdateRequest = authorUpdateRequest,
+        )
+    }
+
+    @Test
+    fun `test that partial update Author updates author description`() {
+        val newDescription = "A new description"
+        val existingAuthor = testAuthorEntityA()
+        val expectedAuthor = existingAuthor.copy(description = newDescription)
+        val authorUpdateRequest = AuthorUpdateRequest(description = newDescription)
+
+        assertThatAuthorPartialUpdateIsUpdated(
+            existingAuthor = existingAuthor,
+            expectedAuthor = expectedAuthor,
+            authorUpdateRequest = authorUpdateRequest,
+        )
+    }
+
+    @Test
+    fun `test that partial update Author updates author image`() {
+        val newImage = "new-image.jpeg"
+        val existingAuthor = testAuthorEntityA()
+        val expectedAuthor = existingAuthor.copy(image = newImage)
+        val authorUpdateRequest = AuthorUpdateRequest(image = newImage)
+
+        assertThatAuthorPartialUpdateIsUpdated(
+            existingAuthor = existingAuthor,
+            expectedAuthor = expectedAuthor,
+            authorUpdateRequest = authorUpdateRequest,
+        )
+    }
+
+    private fun assertThatAuthorPartialUpdateIsUpdated(
+        existingAuthor: AuthorEntity,
+        expectedAuthor: AuthorEntity,
+        authorUpdateRequest: AuthorUpdateRequest,
+    ) {
+        //  Save an existing Author
+        val savedExistingAuthor = authorRepository.save(existingAuthor)
+        val existingAuthorsId = savedExistingAuthor.id!!
+
+        // Update the Author
+        val updatedAuthor = underTest.partialUpdate(existingAuthorsId, authorUpdateRequest)
+
+        // Set up the expected Author
+        val expected = expectedAuthor.copy(id = existingAuthorsId)
+        assertThat(updatedAuthor).isEqualTo(expected)
+
+        val retrievedAuthor = authorRepository.findByIdOrNull(existingAuthorsId)
+        assertThat(retrievedAuthor).isNotNull()
+        assertThat(retrievedAuthor).isEqualTo(expected)
     }
 }
