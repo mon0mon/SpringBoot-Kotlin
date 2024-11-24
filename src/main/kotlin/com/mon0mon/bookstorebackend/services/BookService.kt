@@ -6,5 +6,5 @@ import com.mon0mon.bookstorebackend.domain.entities.BookEntity
 interface BookService {
     fun createUpdate(isbn: String, bookSummary: BookSummary): Pair<BookEntity, Boolean>
 
-    fun list(): List<BookEntity>
+    fun list(authorId: Long?): List<BookEntity>
 }
